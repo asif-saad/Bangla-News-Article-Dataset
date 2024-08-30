@@ -3,112 +3,72 @@ from bs4 import BeautifulSoup
 from datasets.dataset_dict import DatasetDict
 from datasets import Dataset
 import jsonlines
+import time
 
-titleFinal=str()
-categoryFinal=str()
-timeFinal=str()
-contentFinal=str()
-tagsFinal=str()
-d={'EkattorTv':Dataset.from_dict({'Title':titleFinal,'Category':categoryFinal,'Time':timeFinal,'Content':contentFinal,'Tags':tagsFinal})}
-raw_datasets=DatasetDict(d)
+# Initialize variables
+title_final = category_final = time_final = content_final = tags_final = str()
+output_text = 'EkattorTv/output.txt'
+jsonl_path = 'EkattorTv/dataset/ekattorTv.jsonl'
+data_dict = {'EkattorTv': Dataset.from_dict({'Title': [], 'Category': [], 'Time': [], 'Content': [], 'Tags': []})}
+raw_datasets = DatasetDict(data_dict)
 
-
-
-
-
-
-url1='https://ekattor.tv/'
-cnt=52174
+# Base URL
+url_base = 'https://ekattor.tv/'
+cnt = 52174
 
 while True:
-    url=url1+str(cnt)+"/"
+    url = f'{url_base}{cnt}/'
     print(cnt)
     response = requests.get(url)
+    
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
-        h1=soup.find('h1',class_='title')
-        category=soup.find('div',class_="breadcrumb")
-        div=soup.find('div',class_='viewport jw_article_body')
-        tag=soup.find('div',class_='topic_list')
+        h1 = soup.find('h1', class_='title')
+        category = soup.find('div', class_="breadcrumb")
+        div = soup.find('div', class_='viewport jw_article_body')
+        tag = soup.find('div', class_='topic_list')
+        
         if h1 and div:
-            h1=h1.text
-            with open('output.txt','a',encoding='utf-8') as file:
-                with jsonlines.open("C:/Users/asifs/OneDrive/Desktop/dataset/ekattorTv.jsonl", "a") as writer:
-                    titleFinal=str()
-                    categoryFinal=str()
-                    timeFinal=str()
-                    contentFinal=str()
-                    tagsFinal=str()
+            h1_text = h1.text
+            with open(output_text, 'a', encoding='utf-8') as file:
+                with jsonlines.open(jsonl_path, "a") as writer:
+                    # Process title
+                    title_final = h1_text
+                    file.write(f'{cnt-1587},{cnt}\n{title_final}\n')
 
-
-
-
-                    file.write(str(cnt-1587)+','+cnt+'\n'+h1+'\n')
-                    titleFinal=h1
-                    
-                
-
-                    # category
+                    # Process category
+                    category_final = ''
                     if category:
-                        category=category.find('ul')
-                        if category:
-                            category=category.find_all('li')
-                            if category:
-                                category=category[1].text
-                                # print(category)
-                                file.write(category+'\n')
-                                categoryFinal=category
-                                
+                        ul = category.find('ul')
+                        if ul:
+                            li_elements = ul.find_all('li')
+                            if len(li_elements) > 1:
+                                category_final = li_elements[1].text
+                                file.write(f'{category_final}\n')
 
-                
-                    # time
-                    time=soup.find('span',class_='tts_time published_time')
-                    if time:
-                        file.write(time.get('content')+'\n')
-                        timeFinal=time.get('content')
-                        
+                    # Process time
+                    time_element = soup.find('span', class_='tts_time published_time')
+                    if time_element:
+                        time_final = time_element.get('content')
+                        file.write(f'{time_final}\n')
 
+                    # Process content
+                    content_final = ''.join([p.text for p in div.find_all('p')])
+                    file.write(f'{content_final}\n')
 
-
-                    # content
-                    p=div.find_all('p')
-                    content=str()
-                    if p:
-                        for x in p:
-                            content+=x.text
-                        file.write(content+'\n')
-                        contentFinal=content
-                        
-
-
-                    # tags
+                    # Process tags
+                    tags_final = ''
                     if tag:
-                        tag=tag.find_all('strong')
-                        tags=str()
-                        for x in tag:
-                            tags+=x.text
-                            if x!=tag[-1]:
-                                tags+=', '
-                        file.write('tags:'+tags+'\n\n\n')
-                        tagsFinal=tags
-                    
+                        tag_strong = tag.find_all('strong')
+                        tags_final = ', '.join([x.text for x in tag_strong])
+                        file.write(f'tags: {tags_final}\n\n\n')
 
-                    writer.write({'Title':titleFinal,'Category':categoryFinal,'Time':timeFinal,
-                                  'Content':contentFinal,'Tags':tagsFinal})
-
+                    # Write to JSONL
+                    writer.write({'Title': title_final, 'Category': category_final, 'Time': time_final, 'Content': content_final, 'Tags': tags_final})
     else:
         print('Failed to retrieve the web page. Status code:', response.status_code)
-        
-    
-    if cnt%300==0:
-        import time
+
+    if cnt % 300 == 0:
         time.sleep(50)
-    cnt+=1
     
-
-
-
-
-
-
-
+    cnt += 1

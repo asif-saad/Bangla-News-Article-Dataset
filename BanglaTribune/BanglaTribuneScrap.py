@@ -4,78 +4,47 @@ from datasets.dataset_dict import DatasetDict
 from datasets import Dataset
 import jsonlines
 
-titleFinal=str()
-categoryFinal=str()
-timeFinal=str()
-contentFinal=str()
-tagsFinal=str()
-d={'BanglaTribune':Dataset.from_dict({'Title':titleFinal,'Category':categoryFinal,'Time':timeFinal,'Content':contentFinal,'Tags':tagsFinal})}
-raw_datasets=DatasetDict(d)
+# Define constants and initialize variables
+OUTPUT_TEXT = 'BanglaTribune/output.txt'
+LAST_VAL_TEXT = 'BanglaTribune/last_val.txt'
+JSONL_PATH = 'BanglaTribune/dataset/BanglaTribune.jsonl'
+DATA_DICT = {'BanglaTribune': Dataset.from_dict({'Title': [], 'Category': [], 'Time': [], 'Content': [], 'Tags': []})}
+raw_datasets = DatasetDict(DATA_DICT)
 
-with open('C:/Users/asifs/OneDrive/Desktop/News-Article-Dataset/BanglaTribune/last_val.txt','r') as file:
-    cnt=int(file.read())
-
-
+# Read the last processed value
+with open(LAST_VAL_TEXT, 'r') as file:
+    cnt = int(file.read())
 
 while True:
     print(cnt)
-    url='https://www.banglatribune.com/'+str(cnt)+'/'
+    url = f'https://www.banglatribune.com/{cnt}/'
     response = requests.get(url)
+    
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')
-        tag=soup.find('span')
-        title= soup.find('h1',class_='title mb10')
-        content=soup.find('div',class_='viewport jw_article_body')
-        time=soup.find('span',class_='tts_time')
-        categories=soup.find('div',class_='breadcrumb')
-        tags=soup.find('div',class_='topic_list')
-
-
+        title = soup.find('h1', class_='title mb10')
+        content = soup.find('div', class_='viewport jw_article_body')
+        time = soup.find('span', class_='tts_time')
+        categories = soup.find('div', class_='breadcrumb')
+        tags = soup.find('div', class_='topic_list')
 
         if title and content:
-            with open('BanglaTribune/output.txt','a',encoding='utf-8') as file2:
-                with jsonlines.open("C:/Users/asifs/OneDrive/Desktop/dataset/BanglaTribune.jsonl", "a") as writer:
-                    title=title.text
-                    titleFinal=title
-                    file2.write(str(cnt)+'\n'+titleFinal+'\n')
-                    # take title
-                    news=str()
-                    for contents in content:
-                        news+=contents.text
-                    contentFinal=news.strip()
-                    file2.write(contentFinal+'\n')
-                    # take news
-                    time=time.text
-                    timeFinal=time
-                    file2.write(timeFinal+'\n')
-                    # take time    
-                    category=str()
-                    if categories:
-                        categories=categories.find_all('strong')
-                        if categories:
-                            for x in range(1,len(categories)):
-                                category+=categories[x].text
-                                if categories[x].text!=categories[-1].text:
-                                    category+=', '
-                            # take category
-                            categoryFinal=category
-                            file2.write(categoryFinal+'\n')
+            with open(OUTPUT_TEXT, 'a', encoding='utf-8') as file2:
+                with jsonlines.open(JSONL_PATH, "a") as writer:
+                    # Extract and clean the content
+                    content_final = ''.join([c.text for c in content]).strip()
+                    title_final = title.text
+                    time_final = time.text if time else ''
+                    category_final = ', '.join([c.text for c in categories.find_all('strong')[1:]]) if categories else ''
+                    tags_final = ', '.join([t.text for t in tags.find_all('strong')]) if tags else ''
 
-                    tag=str()
-                    if tags:
-                        tags=tags.find_all('strong')
-                        for i in tags:
-                            tag+=i.text
-                            if i.text!=tags[-1].text:
-                                tag+=', '
-                    # take tag
-                    tagsFinal=tag
-                    file2.write('\ntags:'+tagsFinal)
+                    # Write data to output file
+                    file2.write(f'{cnt}\n{title_final}\n{content_final}\n{time_final}\n{category_final}\ntags: {tags_final}\n\n\n')
 
-                    file2.write('\n\n\n')
-                    writer.write({'Title':titleFinal,'Category':categoryFinal,'Time':timeFinal,
-                                    'Content':contentFinal,'Tags':tagsFinal})
-    cnt+=1
-    with open('BanglaTribune/last_val.txt','w') as file1:
+                    # Write data to JSONL file
+                    writer.write({'Title': title_final, 'Category': category_final, 'Time': time_final, 'Content': content_final, 'Tags': tags_final})
+
+    # Increment and save the last processed value
+    cnt += 1
+    with open(LAST_VAL_TEXT, 'w') as file1:
         file1.write(str(cnt))
-

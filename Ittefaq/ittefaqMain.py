@@ -4,92 +4,73 @@ from datasets.dataset_dict import DatasetDict
 from datasets import Dataset
 import jsonlines
 
-titleFinal=str()
-categoryFinal=str()
-timeFinal=str()
-contentFinal=str()
-tagsFinal=str()
-d={'IttefaqNews':Dataset.from_dict({'Title':titleFinal,'Category':categoryFinal,'Time':timeFinal,'Content':contentFinal,'Tags':tagsFinal})}
-raw_datasets=DatasetDict(d)
+# Initialize variables
+title_final = category_final = time_final = content_final = tags_final = str()
+output_text = 'IttefaqNews/output.txt'
+last_val_text = 'IttefaqNews/last_val.txt'
+jsonl_path = 'IttefaqNews/dataset/ittefaq.jsonl'
+data_dict = {'IttefaqNews': Dataset.from_dict({'Title': [], 'Category': [], 'Time': [], 'Content': [], 'Tags': []})}
+raw_datasets = DatasetDict(data_dict)
 
-url1='https://www.ittefaq.com.bd/'
-cnt=381863
-with open("last_val.txt","r") as file:
-    cnt=int(file.read())
+# Base URL
+url_base = 'https://www.ittefaq.com.bd/'
+cnt = 381863
 
-
-
+# Read the last processed value
+with open(last_val_text, "r") as file:
+    cnt = int(file.read())
 
 while True:
-    with open("last_val.txt","w") as file:
-        url=url1+str(cnt)+"/"
+    with open(last_val_text, "w") as file:
+        url = f'{url_base}{cnt}/'
         print(cnt)
         response = requests.get(url)
+        
         if response.status_code == 200:
             file.write(str(cnt))
             soup = BeautifulSoup(response.text, 'html.parser')
-            h1=soup.find('h1',class_='title mb10')
-            contents=soup.find('div',class_='viewport jw_article_body')
-            category=soup.find('h2',class_='secondary_logo')
-            date=soup.find('div',class_='each_row time')
-            tags=soup.find('div',class_='topic_list')
+            h1 = soup.find('h1', class_='title mb10')
+            contents = soup.find('div', class_='viewport jw_article_body')
+            category = soup.find('h2', class_='secondary_logo')
+            date = soup.find('div', class_='each_row time')
+            tags = soup.find('div', class_='topic_list')
 
             if h1 and contents:
-                with open('output.txt','a',encoding='utf-8') as file:
-                    with jsonlines.open("C:/Users/asifs/OneDrive/Desktop/dataset/ittefaq.jsonl", "a") as writer:
-                        titleFinal=str()
-                        categoryFinal=str()
-                        timeFinal=str()
-                        contentFinal=str()
-                        tagsFinal=str()
+                with open(output_text, 'a', encoding='utf-8') as file:
+                    with jsonlines.open(jsonl_path, "a") as writer:
+                        # Process title
+                        title_final = h1.text
+                        file.write(f'{cnt-15817},{cnt}\n{title_final}\n')
 
-                        # titles
-                        h1=h1.text
-                        titleFinal=h1
-                        file.write(str(cnt-15817)+','+str(cnt)+'\n'+titleFinal+'\n')
-
-                        # category
+                        # Process category
                         if category:
-                            category=category.find('span')
-                            # print(category.text)
-                            if category:
-                                categoryFinal=category.text
-                                file.write(categoryFinal+'\n')
+                            category_span = category.find('span')
+                            if category_span:
+                                category_final = category_span.text
+                                file.write(f'{category_final}\n')
 
-                        # time
+                        # Process time
                         if date:
-                            date=date.find('span',class_='tts_time')
-                            # print(date.text)
-                            if date:
-                                timeFinal=date.text
-                                file.write(timeFinal)
+                            date_span = date.find('span', class_='tts_time')
+                            if date_span:
+                                time_final = date_span.text
+                                file.write(time_final)
 
-                        # contents
-                        content=str()
-                        for x in contents:
-                            content+=x.text
-                        contentFinal=content
-                        file.write(contentFinal)
+                        # Process content
+                        content_final = ''.join([x.text for x in contents])
+                        file.write(content_final)
 
-                        # tags
+                        # Process tags
                         if tags:
-                            tags=tags.find_all('strong')
-                            if tags:
-                                tag=str()
-                                for x in tags:
-                                    tag+=x.text
-                                    if x.text!=tags[-1].text:
-                                        tag+=', '
-                                tagsFinal=tag
-                                file.write('\ntags:'+tagsFinal)
-
+                            tags_strong = tags.find_all('strong')
+                            if tags_strong:
+                                tags_final = ', '.join([x.text for x in tags_strong])
+                                file.write(f'\ntags:{tags_final}')
 
                         file.write('\n\n\n')
-                        writer.write({'Title':titleFinal,'Category':categoryFinal,'Time':timeFinal,
-                                    'Content':contentFinal,'Tags':tagsFinal})
-
-                            
+                        writer.write({'Title': title_final, 'Category': category_final, 'Time': time_final, 'Content': content_final, 'Tags': tags_final})
+        
         else:
             print('Failed to retrieve the web page. Status code:', response.status_code)
-        cnt+=1
-
+        
+        cnt += 1
