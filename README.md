@@ -1,14 +1,12 @@
-#  [BNAD: Bangla News Article Dataset](https://www.sciencedirect.com/science/article/pii/S2352340924008382?via%3Dihub)
+#  [BNAD: Bangla News Article Dataset](https://doi.org/10.1016/j.dib.2024.110874)
 
 **size: 16.7GB**
 ## Overview
 
-Explore over 1.9 million Bangla news articles from nine major websites, categorized across topics like sports, economy, politics, local news, tech, tourism, entertainment, education, health, the arts, and many more. Each article includes rich metadata, perfect for advancing Bangla natural language processing. This dataset is ideal for building domain-specific models and innovative AI solutions in the context of Bangladesh.
+Explore over 1.9 million Bangla news articles from nine major websites, categorized across topics like sports, economy, politics, local news, tech, tourism, entertainment, education, health, the arts, and many more. Each article includes rich metadata, perfect for advancing Bangla natural language processing. This dataset is ideal for building domain-specific models and innovative AI solutions in the context of Bangladesh. All the detailed and necessary information can be found at this [paper](https://doi.org/10.1016/j.dib.2024.110874).
 
-## Dataset Specifications:
+## Dataset Specifications
 
-
-### **Features:**
 
 | **Features**              | **Our Dataset**                                                                                                       |
 |---------------------------|-----------------------------------------------------------------------------------------------------------------------|
@@ -19,11 +17,11 @@ Explore over 1.9 million Bangla news articles from nine major websites, categori
 | **News Timespan**          | Well updated to the latest                                                                                             |
 | **Use Cases**              | Keyword similarity and dissimilarity maps, text generation, part-of-speech tagging, named entity recognition, and question answering |
 
-### **Data Collection:**  
+## **Data Collection**  
 This dataset comprises articles collected from nine major Bangla news websites using web-scraping tools. The time range of the articles varies per newspaper, depending on the availability of their online archives. Categories include national, politics, international, sports, education, entertainment, health, science and technology, and more. Each newspaper provides various attributes, including Date and Time, Category, Title, Content, Tags, and Meta. Data was collected using Python, with **Requests** and **BeautifulSoup** as the main tools.
 
-### **News Source Locations:**  
-**The news articles were collected from the following news websites:**  
+## **News Source Locations**  
+**The news articles were collected from the following news websites**  
 >- **[ajkerpatrika.com](https://www.ajkerpatrika.com)**  
 >- **[banglatribune.com](https://www.banglatribune.com)**  
 >- **[dailyinqilab.com](https://www.dailyinqilab.com)**  
@@ -35,20 +33,20 @@ This dataset comprises articles collected from nine major Bangla news websites u
 >- **[samakal.com](https://www.samakal.com)**
 
 
- ### **📂 Data Accessibility**
+ ## **📂 Data Accessibility**
  - **Repository Name:** [**Zenodo**](https://zenodo.org/records/11111869)  
  - **Direct Access:** [https://zenodo.org/records/11111869](https://zenodo.org/records/11111869)  
  - **Access Instructions:** The dataset is publicly accessible through the provided URL
-### Usage:
+## Usage
 The following diagram provides an overview of the dataset's usage:
-![Dataset Usage](https://ars.els-cdn.com/content/image/1-s2.0-S2352340924008382-gr4_lrg.jpg)
+![Dataset Usage](images/Flowchart%20_%20banglaDataset.jpg)
 
 
 
 
 ## License
 
-Contents of this repository are restricted to only non-commercial research purposes under the [license name ](link). Copyright of the dataset contents belongs to the original copyright holders.
+The contents of this repository are available for use, modification, and distribution under the [MIT License](LICENSE). Copyright remains with the original authors. This repository is provided "as is," without any warranty, and is intended for use in both commercial and non-commercial projects.
 
 ## **Citation** 👍
 If you use our data, please cite the following paper:
